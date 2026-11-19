@@ -1,0 +1,233 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{title} | Portfolio</title>
+    <meta
+      name="description"
+      content="Syed Talha Shakeel - Java Backend Developer building interactive and seamless digital experiences."
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <link
+      rel="preload"
+      href="/fonts/montserrat-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+
+    <meta property="og:title" content="Syed Talha Shakeel | Java Backend Developer" />
+    <meta property="og:description" content="Portfolio of Syed Talha Shakeel, Java Backend Developer specializing in Spring Boot and database management." />
+    <meta property="og:type" content="website" />
+    
+    <!-- UPDATE THIS ONCE DEPLOYED -->
+    <meta property="og:url" content="https://your-domain.pages.dev" />
+    <meta property="og:site_name" content="Syed Talha Shakeel Portfolio" />
+  </head>
+  <body class="bg-[--background] sm:px-28 lg:px-20 px-9">
+    <slot />
+
+    <style is:global>
+      /* SCROLL REVEAL */
+      .reveal {
+        opacity: 0 !important;
+        transform: translateY(50px) !important;
+        transition: opacity 0.7s ease-out, transform 0.7s ease-out !important;
+        will-change: opacity, transform;
+      }
+      .reveal.active {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+      }
+
+      /* APPLE-STYLE STICKY STACK */
+      .sticky-card {
+        position: sticky;
+        top: calc(100px + var(--index) * 25px);
+        will-change: transform;
+      }
+      @media (max-width: 768px) {
+        .sticky-card {
+          top: calc(80px + var(--index) * 15px);
+        }
+      }
+
+      /* 3D RGB GLITCH ON HOVER */
+      @keyframes rgb-glitch {
+        0% { filter: drop-shadow(0 0 0 transparent); }
+        25% { filter: drop-shadow(3px 0 0 rgba(255, 0, 0, 0.8)) drop-shadow(-3px 0 0 rgba(0, 255, 255, 0.8)); }
+        50% { filter: drop-shadow(-3px 0 0 rgba(255, 0, 0, 0.8)) drop-shadow(3px 0 0 rgba(0, 255, 255, 0.8)); }
+        75% { filter: drop-shadow(3px 0 0 rgba(255, 0, 0, 0.8)) drop-shadow(-3px 0 0 rgba(0, 255, 255, 0.8)); }
+        100% { filter: drop-shadow(0 0 0 transparent); }
+      }
+
+      .project-card:hover .glitch-img {
+        animation: rgb-glitch 0.4s steps(2, end) infinite;
+      }
+
+      /* MAGNETIC BUTTONS */
+      .magnetic-button {
+        --x: 0px;
+        --y: 0px;
+        transform: translate3d(var(--x), var(--y), 0);
+        transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        will-change: transform;
+      }
+      .magnetic-button:hover {
+        transition: transform 0.05s linear;
+      }
+
+      /* 3D TILT CARDS */
+      .tilt-wrapper { perspective: 1000px; }
+      .project-card { 
+        transform-style: preserve-3d; 
+        will-change: transform;
+        -webkit-font-smoothing: antialiased;
+        backface-visibility: hidden;
+      }
+
+      /* TEXT SCRAMBLE */
+      .dud { color: #a476ff; opacity: 0.5; }
+    </style>
+
+    <script>
+      // 1. Scroll Reveal
+      const sections = document.querySelectorAll("section");
+      sections.forEach((section) => section.classList.add("reveal"));
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("active");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+      sections.forEach((section) => observer.observe(section));
+
+      // 2. Magnetic Buttons
+      document.querySelectorAll('.magnetic-button').forEach((btn) => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          btn.style.setProperty('--x', `${x * 0.3}px`);
+          btn.style.setProperty('--y', `${y * 0.3}px`);
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.setProperty('--x', '0px');
+          btn.style.setProperty('--y', '0px');
+        });
+      });
+
+      // 3. 3D Tilt Cards
+      document.querySelectorAll('.tilt-wrapper').forEach((wrapper) => {
+        const card = wrapper.querySelector('.project-card');
+        const child = card.querySelector('[data-tilt-child]');
+        wrapper.addEventListener('mousemove', (e) => {
+          const rect = wrapper.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const rotateX = ((y / rect.height) - 0.5) * -10; 
+          const rotateY = ((x / rect.width) - 0.5) * 10;
+          card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+          if (child) child.style.transform = `translateZ(15px)`; 
+        });
+        wrapper.addEventListener('mouseleave', () => {
+          card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+          if (child) child.style.transform = `translateZ(0px)`;
+          card.style.transition = 'transform 0.5s ease-out';
+          setTimeout(() => { card.style.transition = ''; }, 500);
+        });
+        wrapper.addEventListener('mouseenter', () => { card.style.transition = 'none'; });
+      });
+
+      // 4. Text Scramble
+      class TextScramble {
+        constructor(el) {
+          this.el = el; this.chars = '!<>-_\\/[]{}—=+*^?#________';
+          this.update = this.update.bind(this);
+        }
+        setText(newText) {
+          const oldText = this.el.innerText;
+          const length = Math.max(oldText.length, newText.length);
+          const promise = new Promise((resolve) => this.resolve = resolve);
+          this.queue = [];
+          for (let i = 0; i < length; i++) {
+            const from = oldText[i] || '';
+            const to = newText[i] || '';
+            const start = Math.floor(Math.random() * 40);
+            const end = start + Math.floor(Math.random() * 40);
+            this.queue.push({ from, to, start, end });
+          }
+          cancelAnimationFrame(this.frameRequest);
+          this.frame = 0; this.update(); return promise;
+        }
+        update() {
+          let output = ''; let complete = 0;
+          for (let i = 0, n = this.queue.length; i < n; i++) {
+            let { from, to, start, end, char } = this.queue[i];
+            if (this.frame >= end) { complete++; output += to; }
+            else if (this.frame >= start) {
+              if (!char || Math.random() < 0.28) {
+                char = this.chars[Math.floor(Math.random() * this.chars.length)];
+                this.queue[i].char = char;
+              }
+              output += `<span class="dud">${char}</span>`;
+            } else { output += from; }
+          }
+          this.el.innerHTML = output;
+          if (complete === this.queue.length) { this.resolve(); }
+          else { this.frameRequest = requestAnimationFrame(this.update); this.frame++; }
+        }
+      }
+      
+      const scrambleEl = document.querySelector('#scramble-text');
+      if (scrambleEl) {
+        const fx = new TextScramble(scrambleEl);
+        const originalText = scrambleEl.innerText;
+        scrambleEl.innerText = ''; 
+        const scrambleObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              fx.setText(originalText);
+              scrambleObserver.unobserve(scrambleEl);
+            }
+          });
+        }, { threshold: 0.5 });
+        scrambleObserver.observe(scrambleEl);
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  @font-face {
+    font-family: "Montserrat Variable";
+    src: url("/fonts/montserrat-latin-wght-normal.woff2") format("woff2-variations");
+    font-weight: 100 900; font-style: normal; font-display: swap;
+  }
+  :root {
+    --background: #101010; --sec: #a476ff; --white: #dfdfdf;
+    --white-icon: #f3f3f398; --white-icon-tr: #f3f3f310;
+  }
+  * {
+    font-family: "Montserrat Variable", -apple-system, system-ui, sans-serif;
+    box-sizing: border-box; padding: 0; margin: 0;
+  }
+  *::selection { background-color: var(--sec); color: var(--background); }
+  ::-webkit-scrollbar { width: 15px; }
+  ::-webkit-scrollbar-track { background: var(--container); border-radius: 30px; }
+  ::-webkit-scrollbar-thumb { background: var(--background); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--pink); }
+  * { scrollbar-width: thin; scrollbar-color: var(--line) var(--container); }
+</style>
